@@ -74,14 +74,15 @@ def main():
                 last_check_4h[symbol] = current_time
 
             # === 30m ===
-            if current_time - last_check_30m[symbol] >= 1600: # 1800 = 30 минут
+            if current_time - last_check_30m[symbol] >= 1790: # 1800 = 30 минут
                 print (f"\n🔄 Проверка 30m сигнала для {symbol}...")
                 check_signal(symbol, '30m', get_ohlcv_30m, calculate_indicators_30m, analyze_signals_30m, 1800)
                 last_check_30m[symbol] = current_time
-        print("Ожидание 10 m")
-        time.sleep(360)
+        print("Ожидание 5 m")
+        time.sleep(180)
     
 
 if __name__ == "__main__":
 
     main()
+
