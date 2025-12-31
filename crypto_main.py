@@ -8,7 +8,6 @@ from crypto_4h import get_ohlcv_4h, calculate_indicators_4h, analyze_signals_4h
 import os
 from dotenv import load_dotenv
 
-load_dotenv() 
 
 # === TELEGRAM ===
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -60,29 +59,18 @@ SYMBOLS = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT']
 def main():
     print("🚀 Запуск криптобота. Проверка 4h каждые 2 часа, 30m каждые 30 минут...")
     asyncio.run(send_telegram_message("Успешный запуск"))
-    last_check_4h = {symbol: 0 for symbol in SYMBOLS}
-    last_check_30m = {symbol: 0 for symbol in SYMBOLS}
-    while True:
-        current_time=time.time()
+    for symbol in SYMBOLS:
+        print(f"\n🔄 Проверка 4H сигнала для {symbol}...")
+        check_signal(symbol, '4H', get_ohlcv_4h, calculate_indicators_4h, analyze_signals_4h, 7200)
 
-        for symbol in SYMBOLS:
+        print(f"\n🔄 Проверка 30m сигнала для {symbol}...")
+        check_signal(symbol, '30m', get_ohlcv_30m, calculate_indicators_30m, analyze_signals_30m, 1800)
 
-            # === 4H ===
-            if current_time - last_check_4h[symbol] >= 7200: # 7200 = 2 часа
-                print (f"\n🔄 Проверка 4H сигнала для {symbol}...")
-                check_signal(symbol, '4H', get_ohlcv_4h, calculate_indicators_4h, analyze_signals_4h, 7200)
-                last_check_4h[symbol] = current_time
-
-            # === 30m ===
-            if current_time - last_check_30m[symbol] >= 1790: # 1800 = 30 минут
-                print (f"\n🔄 Проверка 30m сигнала для {symbol}...")
-                check_signal(symbol, '30m', get_ohlcv_30m, calculate_indicators_30m, analyze_signals_30m, 1800)
-                last_check_30m[symbol] = current_time
-        print("Ожидание 5 m")
-        time.sleep(180)
+    print("✅ Проверка завершена. Ждём следующего запуска по расписанию.")
     
 
 if __name__ == "__main__":
 
     main()
+
 
