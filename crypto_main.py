@@ -12,7 +12,7 @@ load_dotenv()
 
 # === TELEGRAM ===
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-CHAT_ID = os.getenv('CHAT_ID')888611870 
+CHAT_ID = os.getenv('CHAT_ID')
 
 if not TELEGRAM_TOKEN or not CHAT_ID:
     raise ValueError("Ошибка чтения TELEGRAM_TOKEN и CHAT_ID из переменных окружения")
@@ -83,4 +83,5 @@ def main():
     
 
 if __name__ == "__main__":
+
     main()
