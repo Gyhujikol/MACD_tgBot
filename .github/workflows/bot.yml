@@ -2,7 +2,7 @@ name: Crypto Signal Bot
 
 on:
   schedule:
-    - cron: '* * * * *'  # Каждые 30 минут
+    - cron: '*/30 * * * *'  # Каждые 30 минут
   workflow_dispatch:  # Чтобы можно было запустить вручную
 
 jobs:
