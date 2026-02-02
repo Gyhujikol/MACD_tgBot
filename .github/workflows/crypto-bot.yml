@@ -2,9 +2,8 @@ name: Crypto Trading Bot
 
 on:
   schedule:
-    # Крипта торгуется 24/7, каждые 2 часа
     - cron: '0 */2 * * *'
-  workflow_dispatch:  # Ручной запуск
+  workflow_dispatch:
   push:
     branches: [ main ]
     paths:
@@ -18,7 +17,7 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4  # Обновили до v4
       
     - name: Debug structure
       run: |
@@ -28,7 +27,7 @@ jobs:
         ls -la Crypt_bot/
       
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5  # Обновили до v5
       with:
         python-version: '3.10'
         
@@ -36,7 +35,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install ccxt ta  # Специфичные для крипты
+        pip install ccxt ta
         
     - name: Create .env file with secrets
       run: |
@@ -51,7 +50,7 @@ jobs:
         
     - name: Upload logs on failure
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # ⚠️ ИЗМЕНИТЕ НА v4!
       with:
         name: crypto-error-logs-${{ github.run_id }}
         path: |
