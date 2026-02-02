@@ -2,20 +2,24 @@ name: MOEX Trading Bot
 
 on:
   schedule:
-    # Запускать каждые 2 часа с 7:00 до 19:00 по МСК (4:00-16:00 UTC)
-    - cron: '0 4,6,8,10,12,14,16 * * 1-5'  # Пн-Пт, каждый день в 4,6,8,10,12,14,16 UTC
+    # Будние дни (пн-пт): с 7:00 до 23:00 МСК (каждые 2 часа)
+    - cron: '0 4,6,8,10,12,14,16,18,20 * * 1-5'
+    
+    # Выходные (сб-вс): с 7:00 до 19:00 МСК (каждые 2 часа)
+    - cron: '0 4,6,8,10,12,14,16 * * 6,0'
+    
   workflow_dispatch:  # Позволяет запускать вручную
   push:
     branches: [ main ]
     paths:
-      - 'moex_main.py'
-      - 'moex_4h.py'
+      - '**.py'
       - 'tickers.txt'
-      - '.github/workflows/moex-bot.yml'
+      - '.github/workflows/*.yml'
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout repository
@@ -33,19 +37,19 @@ jobs:
         
     - name: Create .env file from secrets
       run: |
-        cat > .env << EOF
-        TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}
-        CHAT_ID=${{ secrets.CHAT_ID }}
-        TINKOFF_API_TOKEN=${{ secrets.TINKOFF_API_TOKEN }}
-        EOF
+        echo "TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}" > .env
+        echo "CHAT_ID=${{ secrets.CHAT_ID }}" >> .env
+        echo "TINKOFF_API_TOKEN=${{ secrets.TINKOFF_API_TOKEN }}" >> .env
         
-    - name: Run bot
+    - name: Run MOEX Trading Bot
       run: python moex_main.py
       
     - name: Upload logs on failure
       if: failure()
       uses: actions/upload-artifact@v3
       with:
-        name: error-logs
-        path: ./
-        if-no-files-found: ignore
+        name: error-logs-${{ github.run_id }}
+        path: |
+          ./*.log
+          ./*.txt
+        retention-days: 14
