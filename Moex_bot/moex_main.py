@@ -114,11 +114,10 @@ def main():
             signal_msg += f"💰 Цена: {sig['price']:.2f}\n"
             signal_msg += f"🕒 Время: {sig['time']}"
             asyncio.run(send_telegram_message(signal_msg))
-    else:
-        asyncio.run(send_telegram_message("📊 Нет новых сигналов"))
 
     print("\n✅ Проверка завершена")
 
 if __name__ == "__main__":
 
     main()
+
