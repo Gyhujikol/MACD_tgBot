@@ -46,7 +46,7 @@ def main():
     print("🚀 Запуск Tinkoff-бота с MACD-стратегией...")
 
     # Отправляем сообщение о запуске
-    asyncio.run(send_telegram_message("✅ Запуск Tinkoff-бота"))
+    asyncio.run(send_telegram_message("Запуск Tinkoff-бота"))
 
     all_tickers = load_tickers()
 
@@ -120,4 +120,5 @@ def main():
     print("\n✅ Проверка завершена")
 
 if __name__ == "__main__":
+
     main()
