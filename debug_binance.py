@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+import ccxt
+import pandas as pd
+import sys
+import os
+
+print("=" * 50)
+print("🔍 DEBUG BINANCE API IN GITHUB ACTIONS")
+print("=" * 50)
+
+# 1. Проверяем окружение
+print("\n1. 🐍 ПРОВЕРКА ОКРУЖЕНИЯ:")
+print(f"Python version: {sys.version}")
+print(f"Current dir: {os.getcwd()}")
+print(f"Files in dir: {os.listdir('.')}")
+
+# 2. Проверяем Crypt_bot папку
+if os.path.exists('Crypt_bot'):
+    print(f"\n📁 Crypt_bot содержимое: {os.listdir('Crypt_bot')}")
+    if os.path.exists('Crypt_bot/tickers.txt'):
+        with open('Crypt_bot/tickers.txt', 'r') as f:
+            content = f.read()
+            print(f"\n📄 tickers.txt содержимое:\n{content}")
+
+# 3. Тестируем Binance API
+print("\n2. 🔗 ТЕСТ BINANCE API:")
+
+try:
+    exchange = ccxt.binance({
+        'timeout': 30000,
+        'enableRateLimit': True,
+        'options': {'defaultType': 'spot'}
+    })
+    
+    print("✅ Exchange объект создан")
+    
+    # Загружаем рынки
+    markets = exchange.load_markets()
+    print(f"✅ Загружено {len(markets)} торговых пар")
+    
+    # Ищем BTC пары
+    print("\n3. 🔍 ПОИСК BTC ПАР:")
+    btc_pairs = [s for s in markets.keys() if 'BTC' in s and 'USDT' in s]
+    print(f"Найдено BTC/USDT пар: {len(btc_pairs)}")
+    print(f"Примеры: {btc_pairs[:5]}")
+    
+    # Тестируем получение свечей
+    print("\n4. 📊 ТЕСТ ПОЛУЧЕНИЯ СВЕЧЕЙ:")
+    
+    # Пробуем разные варианты
+    test_symbols = [
+        'BTC/USDT',
+        'BTCUSDT', 
+        'BTCUSDT'.lower(),
+        btc_pairs[0] if btc_pairs else 'BTCUSDT'
+    ]
+    
+    for symbol in test_symbols:
+        print(f"\n🔍 Пробуем: {symbol}")
+        try:
+            ohlcv = exchange.fetch_ohlcv(symbol, '4h', limit=5)
+            print(f"✅ Успех! Получено {len(ohlcv)} свечей")
+            
+            if ohlcv:
+                df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+                df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+                print(f"\n📈 Данные свечей:")
+                print(df[['timestamp', 'close']].to_string())
+                
+                # Получаем полные данные
+                print(f"\n📥 Пробуем получить 100 свечей...")
+                ohlcv_full = exchange.fetch_ohlcv(symbol, '4h', limit=100)
+                print(f"✅ Получено {len(ohlcv_full)} свечей")
+                break
+                
+        except ccxt.BadSymbol:
+            print("❌ BadSymbol - неправильное имя пары")
+            continue
+        except ccxt.NetworkError as e:
+            print(f"❌ NetworkError: {e}")
+            print("⚠️ Возможно проблемы с сетью в GitHub Actions")
+            continue
+        except ccxt.ExchangeError as e:
+            print(f"❌ ExchangeError: {e}")
+            continue
+        except Exception as e:
+            print(f"⚠️ Другая ошибка: {type(e).__name__}: {e}")
+            continue
+    
+    print("\n5. 🌐 ПРОВЕРКА СЕТИ:")
+    import requests
+    try:
+        resp = requests.get('https://api.binance.com/api/v3/ping', timeout=10)
+        print(f"✅ Binance API доступен, статус: {resp.status_code}")
+    except Exception as e:
+        print(f"❌ Binance API недоступен: {e}")
+        
+except Exception as e:
+    print(f"💥 КРИТИЧЕСКАЯ ОШИБКА: {type(e).__name__}: {e}")
+    import traceback
+    traceback.print_exc()
+
+print("\n" + "=" * 50)
+print("✅ ДЕБАГ ЗАВЕРШЕН")
+print("=" * 50)
